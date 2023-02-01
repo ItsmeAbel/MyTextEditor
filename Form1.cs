@@ -11,7 +11,7 @@ using System.Windows.Forms;
 //Några antaganden som har gjorts under detta laboration är att det endast används filer av ".txt" formatet och att
 //proggammet körs endast på datorer med windows OS. Programmet har ej testas på andra OS och därmed kan ej garanteras att funka.
 //Programmet byggdes mha .NET framework version 5.0.4
-//Referens till kod kan hittas på: https://learn.microsoft.com/en-us/docs/
+//Referens till kod kan hittas på: https://learn.microsoft.com/en-us/dotnet/
 //
 
 namespace MyTextEditor
