@@ -14,19 +14,21 @@ namespace MyTextEditor
 
     public partial class underleaf : Form
     {
-        string filePath = string.Empty;
+        string filePath = String.Empty;
         int isfileSaved; //variable used to check if the file has been saved or not
-        int isopen;
+        int isopen; //used for char count in an opened or dragged and dropped file
         int allletterscount; //Keeps count of all characters
-        int letterswithoutspace; 
-        //int words;
-        int rows;
+        int letterswithoutspace;
+        int word;
+        int dragndrop; //used for file name in drag and drop
+ 
+   
 
         //initilaizes the program
         public underleaf()
         {
             InitializeComponent();
-            this.Text = "Nameless.txt";
+            this.Text = "Nameless";
             texteditor.AllowDrop = true;
             //texteditor.EnableAutoDragDrop = true; //can be used to move text within the editor
             texteditor.DragDrop += Texteditor_DragDrop;
@@ -48,10 +50,11 @@ namespace MyTextEditor
                     //if Ctrl is pressed
                     if (ModifierKeys.HasFlag(Keys.Control))
                     {   
-                        underleaf.ActiveForm.Text = underleaf.ActiveForm.Text + '*';
+                        underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + '*';
                         texteditor.SelectionColor = Color.DarkGreen;
                         texteditor.AppendText(dropfileTemp);
-                    }else if (ModifierKeys.HasFlag(Keys.Shift)) //If Shift is pressed
+                    }
+                    else if (ModifierKeys.HasFlag(Keys.Shift)) //If Shift is pressed
                     {
                         //underleaf.ActiveForm.Text = underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + '*';
                         texteditor.SelectedText = dropfileTemp;
@@ -60,17 +63,20 @@ namespace MyTextEditor
                     {
                         
                         DialogResult result = MessageBox.Show("You have not saved the current file. Save the file first?", "Warning!", MessageBoxButtons.YesNoCancel);
-                        if (result == System.Windows.Forms.DialogResult.Yes)
+                        if (result == DialogResult.Yes)
                         {
                             texteditor.Text = dropfileTemp;
                             savefile();
                             underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
-                            isfileSaved = 2;
+                            dragndrop = 1; //file has been dropped
+                            isfileSaved = 2; //file has been saved
+                            isopen = 1;
 
                         }
                         else
-                        { 
-                        
+                        {
+                            MessageBox.Show("Must save file first!");
+                            //underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                         }
                     }
                 }
@@ -85,13 +91,13 @@ namespace MyTextEditor
             if (isfileSaved == 1)
             {
                 result = MessageBox.Show("You have not saved the current file. Save the file first?", "Warning!", MessageBoxButtons.YesNoCancel);
-                if (result == System.Windows.Forms.DialogResult.Yes)
+                if (result == DialogResult.Yes)
                 {
                     savefile();
 
                     underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                 }
-                else if (result == System.Windows.Forms.DialogResult.No)
+                else if (result == DialogResult.No)
                 {
                     texteditor.Clear();
                     filePath = "Nameless";
@@ -140,12 +146,11 @@ namespace MyTextEditor
 
                     if (fileopener.ShowDialog() == DialogResult.OK)
                     {
-                        //filePath = fileopener.FileName;
+                        filePath = fileopener.FileName; //comment out????????
                         //Read the contents of the file into a stream
                         var fileStream = fileopener.OpenFile();
                         System.IO.StreamReader reader = new System.IO.StreamReader(fileStream);
                         texteditor.Text = reader.ReadToEnd();
-
                         allletterscount = texteditor.TextLength;
                         allletters.Text = "All Letters: " + allletterscount;
 
@@ -155,10 +160,10 @@ namespace MyTextEditor
 
                         rowcount.Text = "Rows:" + texteditor.Lines.Count();
 
-                        int word = wordCounter(texteditor.Text);
-                        wordcount.Text = "Words: " + word;
+                        int words = wordCounter(texteditor.Text);
+                        wordcount.Text = "Words: " + words;
                         reader.Close();
-
+                        isopen = 1;
                         isfileSaved = 2;
                     }
                     underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
@@ -178,7 +183,6 @@ namespace MyTextEditor
                     var fileStream = fileopener.OpenFile();
                     System.IO.StreamReader reader = new System.IO.StreamReader(fileStream);
                     texteditor.Text = reader.ReadToEnd();
-
                     allletterscount = texteditor.TextLength;
                     allletters.Text = "All Letters: " + allletterscount;
 
@@ -188,10 +192,11 @@ namespace MyTextEditor
 
                     rowcount.Text = "Rows:" + texteditor.Lines.Count();
 
-                    int word = wordCounter(texteditor.Text);
-                    wordcount.Text = "Words: " + word;
+                    int words = wordCounter(texteditor.Text);
+                    wordcount.Text = "Words: " + words;
                     reader.Close();
                     isfileSaved = 2;
+                    isopen = 1;
                 }
                 underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
             }
@@ -226,9 +231,17 @@ namespace MyTextEditor
         //when the contents of the text field has been changed
         private void texteditor_TextChanged(object sender, EventArgs e)
         {
-            if (filePath == String.Empty)
+            if (filePath == String.Empty || isopen == 1)
             {
-                underleaf.ActiveForm.Text = "Nameless" + "*";
+                if (filePath == String.Empty)
+                {
+                    underleaf.ActiveForm.Text = "Nameless.txt" + "*"; //if there is no filepath for the file. i.e the file hasn't been saved yet
+                }
+                else
+                {
+                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + "*";
+                }
+                
                 isfileSaved = 1;
                 allletterscount = texteditor.TextLength;
                 allletters.Text = "All Letters: " + allletterscount;
@@ -244,8 +257,18 @@ namespace MyTextEditor
             }
             else
             {
-                underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + "*";
-                isfileSaved = 1;
+                if (dragndrop == 1)
+                {
+                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    isfileSaved = 1;
+                    dragndrop = 2;
+                }
+                else
+                {
+                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + "*";
+                    isfileSaved = 1;
+                }
+
             }
 
         }
@@ -271,16 +294,42 @@ namespace MyTextEditor
             }
             else
             {
+                underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                 isfileSaved = 2;
                 System.IO.StreamWriter saver = new System.IO.StreamWriter(filePath);
                 saver.Write(texteditor.Text);
                 saver.Close();
             }
         }
-        //counts characters excluding space
+
+        //character and word counter
+        private void allcounter(string temptext)
+        {
+            allletterscount = 0;
+            letterswithoutspace = 0;
+            word = 0;
+
+            allletterscount = temptext.Length;
+            allletters.Text = "All Letters: " + allletterscount;
+
+            String temstring = texteditor.Text;
+            letterswithoutspace = temstring.Count(char.IsLetterOrDigit);
+            Lettersspace.Text = "Letters without space: " + letterswithoutspace;
+            rowcount.Text = "Rows:" + texteditor.Lines.Count();
+
+            word = wordCounter(texteditor.Text);
+            wordcount.Text = "Words: " + word;
+
+        }
+        //used to count words. If there is a space it's a word
         private static int wordCounter(string s)
         {
             return s.Split(new char[] {' '},StringSplitOptions.RemoveEmptyEntries).Length;
+        }
+        //counts all characters excluding new line
+        private static int wordCounternobrake(string s)
+        {
+            return s.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
         }
 
         //triggers upon exiting the program
