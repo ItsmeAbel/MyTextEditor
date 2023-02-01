@@ -12,7 +12,7 @@ using System.Windows.Forms;
 //proggammet körs endast på datorer med windows OS. Programmet har ej testas på andra OS och därmed kan ej garanteras att funka.
 //Programmet byggdes mha .NET framework version 5.0.4
 //Referens till kod kan hittas på: https://learn.microsoft.com/en-us/dotnet/
-//
+//Gör ett försök på Version 3(Full poäng)
 
 namespace MyTextEditor
 {
