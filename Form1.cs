@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using System.IO;
+
 
 //Några antaganden som har gjorts under detta laboration är att det endast används filer av ".txt" formatet och att
 //proggammet körs endast på datorer med windows OS. Programmet har ej testas på andra OS och därmed kan ej garanteras att funka.
@@ -46,10 +49,10 @@ namespace MyTextEditor
             var data = e.Data.GetData(DataFormats.FileDrop);
             if(data != null)
             {
-                String[] dropfiles = (string[])e.Data.GetData(DataFormats.FileDrop, false); //used to get file path
+                string[] dropfiles = (string[])e.Data.GetData(DataFormats.FileDrop, false); //used to get file path
                 if (dropfiles != null && dropfiles.Length != 0) 
                 {
-                    System.IO.StreamReader dropreader = new System.IO.StreamReader(dropfiles[0]);
+                    var dropreader = new StreamReader(dropfiles[0]);
                     string dropfileTemp = dropreader.ReadToEnd(); //saves the contents of file in a temporary file
                     dropreader.Close();
                     //if Ctrl is pressed
@@ -75,13 +78,19 @@ namespace MyTextEditor
                             underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                             dragndrop = 1; //file has been dropped
                             isfileSaved = 2; //file has been saved
-                            isopen = 1; //files has been opened
+                            //isopen = 1; //files has been opened
 
+                        }
+                        else if(result == DialogResult.No)
+                        {
+                            filePath = string.Empty;
+                            texteditor.Text = dropfileTemp;
+                            isfileSaved = 1;
+                            isopen = 1;
                         }
                         else
                         {
-                            MessageBox.Show("Must save file first!");
-                            //underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+
                         }
                     }
                 }
@@ -89,11 +98,12 @@ namespace MyTextEditor
             }
             underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
         }
+
         //creates a new text file
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DialogResult result;
-            if (isfileSaved == 1)
+            if (isfileSaved == 1 || isopen == 1)
             {
                 //saves the already existing text if it hasn't been saved yet
                 result = MessageBox.Show("You have not saved the current file. Save the file first?", "Warning!", MessageBoxButtons.YesNoCancel);
@@ -101,12 +111,16 @@ namespace MyTextEditor
                 {
                     savefile();
                     underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    filePath = string.Empty;
+                    texteditor.Clear();
+                    isopen = 2;
                 }
                 else if (result == DialogResult.No) //opens new file without saving the already existing text
                 {
                     texteditor.Clear(); //clears the text
                     filePath = "Nameless"; //sets file title to Nameless
                     underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    isopen = 2;
                 }
             }
             else
@@ -251,18 +265,23 @@ namespace MyTextEditor
                 }
                 
                 isfileSaved = 1; //marks file as unsaved
+                String temstring = texteditor.Text;
+                char excludechar = '\n';
+
                 //updates counter
-                allletterscount = texteditor.TextLength;
+                string textwithoutbreak = temstring.Replace(excludechar.ToString(), ""); //solves the issue of newline counting as a letter
+                allletterscount = textwithoutbreak.Length;
                 allletters.Text = "All Letters: " + allletterscount;
 
-                String temstring = texteditor.Text;
                 letterswithoutspace = temstring.Count(char.IsLetterOrDigit);
                 Lettersspace.Text = "Letters without space: " + letterswithoutspace;
 
                 rowcount.Text = "Rows:" + texteditor.Lines.Count();
 
-                int words = wordCounter(texteditor.Text);
-                wordcount.Text = "Words: " + words;
+                //working solution
+                string[] words = Regex.Split(temstring, @"\s+");
+                int wordcountnum = words.Length;
+                wordcount.Text = "Words: " + (wordcountnum - 1);
             }
             else
             {
@@ -270,7 +289,7 @@ namespace MyTextEditor
                 if (dragndrop == 1)
                 {
                     underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
-                    isfileSaved = 1;
+                    isfileSaved = 2;
                     dragndrop = 2;
                 }
                 else
@@ -348,7 +367,6 @@ namespace MyTextEditor
             else
             {
                 Application.Exit();
-
             }
         }
     }
