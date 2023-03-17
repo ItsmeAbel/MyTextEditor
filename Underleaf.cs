@@ -17,6 +17,8 @@ using System.IO;
 //Referens till kod kan hittas på: https://learn.microsoft.com/en-us/dotnet/
 //Gör ett försök på Version 3(Full poäng)
 
+//Efter retur: Har fixat alla fel som hittades
+//Har byt ut alla instanser av underleaf.Activeform.Text med this.Text. Detta pga underleaf.text returnerar null och gör att programmet kraschar om den inte är i fokus
 namespace MyTextEditor
 {
 
@@ -27,8 +29,8 @@ namespace MyTextEditor
         int isopen; //used for char count in an opened or dragged and dropped file
         int allletterscount; //Keeps count of all characters
         int letterswithoutspace;
-        int newfile = 0;
-        int newsaved = 0;
+        int newfile = 0; //new file has been created after saving the already existing one
+        int newsaved = 0; //used to check if file has already been saved through newfile in prior
         int dragndrop; //used for window title in drag and drop
  
    
@@ -59,7 +61,7 @@ namespace MyTextEditor
                     //if Ctrl is pressed
                     if (ModifierKeys.HasFlag(Keys.Control))
                     {   
-                        underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + '*'; //window title gets updated
+                        this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + '*'; //window title gets updated
                         texteditor.SelectionColor = Color.DarkGreen; //new text has another color
                         texteditor.AppendText(dropfileTemp); //appends the text to the end of the already existing text
                     }
@@ -78,7 +80,7 @@ namespace MyTextEditor
                             filePath = dropfiles[0];
                             Console.WriteLine(dropfiles[0]);
                             savefile();
-                            underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                            this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                             dragndrop = 1; //file has been dropped
                             isfileSaved = 2; //file has been saved
                             isopen = 1; //files has been opened
@@ -119,7 +121,7 @@ namespace MyTextEditor
                     {
                         texteditor.Clear();
                         filePath = "Nameless"; //sets file title to Nameless
-                        underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                        this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                         isfileSaved = 2;
                         //isopen = 2;
 
@@ -130,7 +132,7 @@ namespace MyTextEditor
                 {
                     texteditor.Clear(); //clears the text
                     filePath = "Nameless"; //sets file title to Nameless
-                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                     //isopen = 2;
                     isfileSaved = 2;
                 }
@@ -140,7 +142,7 @@ namespace MyTextEditor
                 texteditor.Clear();
                 isfileSaved = 2;
                 filePath = "Nameless"; //sets file title to Nameless
-                underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
             }
         }
 
@@ -169,7 +171,7 @@ namespace MyTextEditor
                 if (result == System.Windows.Forms.DialogResult.Yes) //saves the file first
                 {
                     savefile();
-                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath); //title without asterisk
+                    this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath); //title without asterisk
 
                 } else if (result == System.Windows.Forms.DialogResult.No) //if user doesn't want to save text
                 {
@@ -202,7 +204,7 @@ namespace MyTextEditor
                         isopen = 1; //marks file has been opened. Used for live update of the counters in texteditor_TextChanged()
                         isfileSaved = 2; //marks that the file has already been saved
                     }
-                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath); //updates window's title
+                    this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath); //updates window's title
                 }
             }
             else
@@ -234,7 +236,7 @@ namespace MyTextEditor
                     isfileSaved = 2;
                     isopen = 1;
                 }
-                underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
             }
 
         }
@@ -257,7 +259,7 @@ namespace MyTextEditor
             {
                 System.IO.StreamWriter saver = new System.IO.StreamWriter(filesaver.FileName);
                 filePath = filesaver.FileName;
-                underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                 saver.Write(texteditor.Text);
                 saver.Close();
             }
@@ -296,7 +298,7 @@ namespace MyTextEditor
                 }
                 else
                 {
-                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + "*"; //if there is a filepath, set title to file name + *
+                    this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + "*"; //if there is a filepath, set title to file name + *
                     newfile = 1;
                 }
                 
@@ -308,13 +310,13 @@ namespace MyTextEditor
                 //used to update windows title if file has been dragged and dropped
                 if (dragndrop == 1)
                 {
-                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                     isfileSaved = 2;
                     dragndrop = 2;
                 }
                 else
                 {
-                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + "*";
+                    this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath) + "*";
                     isfileSaved = 1;
                 }
 
@@ -339,7 +341,7 @@ namespace MyTextEditor
                     saver0.Write(texteditor.Text);
                     saver0.Close();
                     filePath = filesaver.FileName; //set path to the file
-                    underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                     isfileSaved = 2;
                     newfile = 0;
                     newsaved = 1;
@@ -356,7 +358,7 @@ namespace MyTextEditor
             else
             {
                 //if path already exists, save text into the file at the path
-                underleaf.ActiveForm.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                this.Text = System.IO.Path.GetFileNameWithoutExtension(filePath);
                 isfileSaved = 2; //marks the text as saved
                 System.IO.StreamWriter saver = new System.IO.StreamWriter(filePath);
                 saver.Write(texteditor.Text);
