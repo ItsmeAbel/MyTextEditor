@@ -402,5 +402,20 @@ namespace MyTextEditor
                 Application.Exit();
             }
         }
+
+        private void tahomaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            texteditor.SelectionFont = new Font("Tahoma", 20);
+        }
+
+        private void lucidaHandwrittingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            texteditor.SelectionFont = new Font("Lucida Handwriting", 20);
+        }
+
+        private void maturaMTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            texteditor.SelectionFont = new Font("Matura MT Script Capitals", 20);
+        }
     }
 }
